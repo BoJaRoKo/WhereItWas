@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="WhereItWas.MsSQL/WhereItWas.MsSQL.sqlproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="WhereItWas.Core/WhereItWas.Core.csproj" />
+  <Project Path="WhereItWas.Cli/WhereItWas.Cli.csproj" />
+  <Project Path="WhereItWas.Gui/WhereItWas.Gui.csproj" />
+  <Project Path="WhereItWas.Tests/WhereItWas.Tests.csproj" />
+</Solution>
