@@ -20,10 +20,13 @@ class Program
         var currentConnection = sessionManager.TryLoginByInfoFile();
         if (currentConnection is null)
         {
-            currentConnection = sessionManager.LoginByForm();
+            currentConnection = sessionManager.LoginByForm(out var saveConnection);
             if (currentConnection is not null)
             {
-                sessionManager.SaveConnection();
+                if (saveConnection)
+                {
+                    sessionManager.SaveConnection();
+                }
             }
             else
             {

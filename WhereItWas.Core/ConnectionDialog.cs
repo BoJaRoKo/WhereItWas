@@ -26,7 +26,6 @@ public sealed partial class ConnectionDialog : Form
         _connectionTester = connectionTester;
 
         ConfigureRuntimeState();
-        ApplyProfile(profile);
         ApplyAuthenticationMode();
     }
 
@@ -55,6 +54,11 @@ public sealed partial class ConnectionDialog : Form
                 "SQL Server",
                 "Windows"
             });
+        }
+
+        if (_authenticationComboBox.SelectedIndex < 0 && _authenticationComboBox.Items.Count > 0)
+        {
+            _authenticationComboBox.SelectedIndex = 0;
         }
 
         ReplaceComboBoxItems(_serverComboBox, GetSuggestedServers(), keepText: false);
@@ -88,11 +92,16 @@ public sealed partial class ConnectionDialog : Form
     private void ApplyAuthenticationMode()
     {
         var useWindowsAuthentication = SelectedAuthenticationMode == SqlAuthenticationMode.Windows;
+        var credentialsHostRow = GetCredentialsHostRow();
 
         _credentialsPanel.Visible = !useWindowsAuthentication;
         _credentialsPanel.Enabled = !useWindowsAuthentication;
-        _credentialsHostRow.Height = useWindowsAuthentication ? 0 : 70;
-        _credentialsHostRow.SizeType = useWindowsAuthentication ? SizeType.Absolute : SizeType.AutoSize;
+
+        if (credentialsHostRow is not null)
+        {
+            credentialsHostRow.Height = useWindowsAuthentication ? 0 : 70;
+            credentialsHostRow.SizeType = useWindowsAuthentication ? SizeType.Absolute : SizeType.AutoSize;
+        }
 
         _userNameTextBox.Enabled = !useWindowsAuthentication;
         _passwordTextBox.Enabled = !useWindowsAuthentication;
@@ -100,6 +109,22 @@ public sealed partial class ConnectionDialog : Form
         _statusLabel.Text = useWindowsAuthentication
             ? "Tryb Windows użyje poświadczeń bieżącego użytkownika systemu."
             : "Tryb SQL Server wymaga podania loginu i hasła użytkownika bazy.";
+    }
+
+    private RowStyle? GetCredentialsHostRow()
+    {
+        if (_credentialsHostRow is not null)
+        {
+            return _credentialsHostRow;
+        }
+
+        if (_connectionLayout.RowStyles.Count <= 3)
+        {
+            return null;
+        }
+
+        _credentialsHostRow = _connectionLayout.RowStyles[3];
+        return _credentialsHostRow;
     }
 
     private void OkButton_Click(object? sender, EventArgs e)

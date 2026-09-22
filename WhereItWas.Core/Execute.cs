@@ -112,7 +112,7 @@ public static class Execute
 
         return sql.ToString();
     }
-    public static string SqlSelectWithPath(QueryParameters x)
+    public static string SqlSelectPathOnly (QueryParameters x)
     {
         ArgumentNullException.ThrowIfNull(x);
 
@@ -170,6 +170,85 @@ public static class Execute
         sql.AppendLine("FROM Paths");
         sql.AppendLine("WHERE LevelInTree = 0");
         sql.AppendLine("    AND ParentId IS NOT NULL");
+        return sql.ToString();
+    }
+    public static string SqlSelectWithPath(QueryParameters x)
+    {
+        ArgumentNullException.ThrowIfNull(x);
+
+        var nodeSelect = SqlSelect(x);
+
+        var sql = new StringBuilder();
+
+        sql.AppendLine("WITH Found AS");
+        sql.AppendLine("(");
+
+        foreach (var line in nodeSelect.Split('\n'))
+            sql.Append("    ").AppendLine(line.TrimEnd('\r'));
+
+        sql.AppendLine("),");
+        sql.AppendLine("Paths AS");
+        sql.AppendLine("(");
+
+        // Początek: każdy znaleziony węzeł.
+        sql.AppendLine("    SELECT");
+        sql.AppendLine("        f.Id AS ResultId,");
+        sql.AppendLine("        n.Id,");
+        sql.AppendLine("        n.ParentId,");
+        sql.AppendLine("        n.LevelInTree,");
+        sql.AppendLine("        CAST(n.Name AS nvarchar(max)) AS FullPath");
+        sql.AppendLine("    FROM Found AS f");
+        sql.AppendLine("    JOIN dbo.TreeNodeSearch AS n ON n.Id = f.Id");
+
+        sql.AppendLine();
+        sql.AppendLine("    UNION ALL");
+        sql.AppendLine();
+
+        // Rekurencja w stronę roota.
+        sql.AppendLine("    SELECT");
+        sql.AppendLine("        p.ResultId,");
+        sql.AppendLine("        n.Id,");
+        sql.AppendLine("        n.ParentId,");
+        sql.AppendLine("        n.LevelInTree,");
+        sql.AppendLine(
+            @"        CAST(n.Name +
+            CASE
+                WHEN RIGHT(n.Name, 1) = N'\' THEN N''
+                ELSE N'\'
+            END +
+            p.FullPath AS nvarchar(max)) AS FullPath");
+        sql.AppendLine("    FROM Paths AS p");
+        sql.AppendLine(
+            "    JOIN dbo.TreeNodeSearch AS n ON n.Id = p.ParentId");
+
+        sql.AppendLine(")");
+        sql.AppendLine("SELECT");
+        sql.AppendLine("    f.*,");
+        sql.AppendLine("    p.FullPath");
+        sql.AppendLine("FROM Found AS f");
+        sql.AppendLine("JOIN Paths AS p ON p.ResultId = f.Id");
+        sql.AppendLine("WHERE p.LevelInTree = 0");
+        sql.AppendLine("  AND p.ParentId IS NOT NULL");
+
+        return sql.ToString();
+    }
+    public static string SqlSelectCount(QueryParameters x)
+    {
+        ArgumentNullException.ThrowIfNull(x);
+
+        var nodeSelect = SqlSelect(x);
+
+        var sql = new StringBuilder();
+
+        sql.AppendLine("SELECT COUNT(*)");
+        sql.AppendLine("FROM");
+        sql.AppendLine("(");
+
+        foreach (var line in nodeSelect.Split('\n'))
+            sql.Append("    ").AppendLine(line.TrimEnd('\r'));
+
+        sql.AppendLine(") AS q");
+
         return sql.ToString();
     }
     private static string EscapeSqlString(string value)

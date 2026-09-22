@@ -7,10 +7,13 @@ namespace WhereItWas.Core;
 
 public sealed class SqlSessionManager : IDisposable
 {
+    private const int DefaultCommandTimeoutSeconds = 120;
     private readonly ConnectionStore _connectionStore = new();
     private SqlConnection? _connection;
 
     public SqlConnection? Connection => _connection;
+
+    public int CommandTimeoutSeconds { get; set; } = DefaultCommandTimeoutSeconds;
 
     public SqlConnectionProfile? CurrentProfile { get; private set; }
 
@@ -31,13 +34,17 @@ public sealed class SqlSessionManager : IDisposable
             return true;
         }
 
-        var profile = LoginByForm(owner);
+        var profile = LoginByForm(owner, out var saveConnection);
         if (profile is null)
         {
             return false;
         }
 
-        SaveConnection();
+        if (saveConnection)
+        {
+            SaveConnection();
+        }
+
         return true;
     }
 
@@ -78,6 +85,26 @@ public sealed class SqlSessionManager : IDisposable
             _connection = null;
             CurrentProfile = null;
         }
+    }
+
+    public DataTable ExecuteQuery(string sql)
+    {
+        ValidateQuery(sql);
+
+        var connection = EnsureOpenConnection();
+        using var command = CreateCommand(connection, sql);
+        using var reader = command.ExecuteReader();
+        return LoadTable(reader);
+    }
+
+    public async Task<DataTable> ExecuteQueryAsync(string sql, CancellationToken cancellationToken = default)
+    {
+        ValidateQuery(sql);
+
+        var connection = await EnsureOpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = CreateCommand(connection, sql);
+        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        return await LoadTableAsync(reader, cancellationToken).ConfigureAwait(false);
     }
 
     public IReadOnlyList<string> GetAvailableDatabases(SqlConnectionProfile profile)
@@ -147,6 +174,106 @@ ORDER BY [name];";
             IntegratedSecurity = profile.AuthenticationMode == SqlAuthenticationMode.Windows,
             TrustServerCertificate = true
         }.ConnectionString;
+    }
+
+    private static void ValidateQuery(string sql)
+    {
+        if (string.IsNullOrWhiteSpace(sql))
+        {
+            throw new ArgumentException("Zapytanie SQL jest puste.", nameof(sql));
+        }
+    }
+
+    private SqlConnectionProfile EnsureCurrentProfile()
+    {
+        var profile = CurrentProfile
+            ?? throw new InvalidOperationException("Brak aktywnego połączenia z bazą danych.");
+
+        if (string.IsNullOrWhiteSpace(profile.Database))
+        {
+            throw new InvalidOperationException("Nie wybrano bazy danych dla bieżącego połączenia.");
+        }
+
+        return profile;
+    }
+
+    private SqlConnection EnsureOpenConnection()
+    {
+        var profile = EnsureCurrentProfile();
+
+        if (_connection?.State == ConnectionState.Open)
+        {
+            return _connection;
+        }
+
+        _connection?.Dispose();
+        _connection = new SqlConnection(BuildConnectionString(profile, profile.Database));
+        _connection.Open();
+        return _connection;
+    }
+
+    private async Task<SqlConnection> EnsureOpenConnectionAsync(CancellationToken cancellationToken)
+    {
+        var profile = EnsureCurrentProfile();
+
+        if (_connection?.State == ConnectionState.Open)
+        {
+            return _connection;
+        }
+
+        _connection?.Dispose();
+        _connection = new SqlConnection(BuildConnectionString(profile, profile.Database));
+        await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        return _connection;
+    }
+
+    private SqlCommand CreateCommand(SqlConnection connection, string sql)
+    {
+        var command = connection.CreateCommand();
+        command.CommandType = CommandType.Text;
+        command.CommandText = sql;
+        command.CommandTimeout = CommandTimeoutSeconds;
+        return command;
+    }
+
+    private static DataTable LoadTable(SqlDataReader reader)
+    {
+        var table = CreateTable(reader);
+        var values = new object[reader.FieldCount];
+
+        while (reader.Read())
+        {
+            reader.GetValues(values);
+            table.Rows.Add((object[])values.Clone());
+        }
+
+        return table;
+    }
+
+    private static async Task<DataTable> LoadTableAsync(SqlDataReader reader, CancellationToken cancellationToken)
+    {
+        var table = CreateTable(reader);
+        var values = new object[reader.FieldCount];
+
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            reader.GetValues(values);
+            table.Rows.Add((object[])values.Clone());
+        }
+
+        return table;
+    }
+
+    private static DataTable CreateTable(SqlDataReader reader)
+    {
+        var table = new DataTable();
+
+        for (var index = 0; index < reader.FieldCount; index++)
+        {
+            table.Columns.Add(reader.GetName(index), reader.GetFieldType(index));
+        }
+
+        return table;
     }
 
     private static void AddServerNames(ISet<string> serverNames, RegistryView registryView)
@@ -228,11 +355,22 @@ ORDER BY [name];";
 
     public SqlConnectionProfile? LoginByForm()
     {
-        return LoginByForm(owner: null);
+        return LoginByForm(owner: null, out _);
     }
 
     public SqlConnectionProfile? LoginByForm(IWin32Window? owner)
     {
+        return LoginByForm(owner, out _);
+    }
+
+    public SqlConnectionProfile? LoginByForm(out bool saveConnection)
+    {
+        return LoginByForm(owner: null, out saveConnection);
+    }
+
+    public SqlConnectionProfile? LoginByForm(IWin32Window? owner, out bool saveConnection)
+    {
+        saveConnection = false;
         var profile = ReadConnection() ?? CurrentProfile;
 
         while (true)
@@ -248,6 +386,7 @@ ORDER BY [name];";
             try
             {
                 Login(profile, saveConnection: false);
+                saveConnection = dialog.SaveConnection;
                 return CurrentProfile;
             }
             catch (Exception exception)

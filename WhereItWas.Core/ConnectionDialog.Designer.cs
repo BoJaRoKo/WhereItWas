@@ -94,7 +94,7 @@ partial class ConnectionDialog
         _rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         _rootLayout.RowStyles.Add(new RowStyle());
         _rootLayout.RowStyles.Add(new RowStyle());
-        _rootLayout.Size = new Size(775, 450);
+        _rootLayout.Size = new Size(775, 555);
         _rootLayout.TabIndex = 0;
         // 
         // _headerLabel
@@ -117,7 +117,7 @@ partial class ConnectionDialog
         _connectionGroupBox.Margin = new Padding(4);
         _connectionGroupBox.Name = "_connectionGroupBox";
         _connectionGroupBox.Padding = new Padding(15);
-        _connectionGroupBox.Size = new Size(737, 231);
+        _connectionGroupBox.Size = new Size(737, 336);
         _connectionGroupBox.TabIndex = 1;
         _connectionGroupBox.TabStop = false;
         _connectionGroupBox.Text = "Połączenie";
@@ -151,7 +151,7 @@ partial class ConnectionDialog
         _connectionLayout.RowStyles.Add(new RowStyle());
         _connectionLayout.RowStyles.Add(new RowStyle());
         _connectionLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        _connectionLayout.Size = new Size(707, 177);
+        _connectionLayout.Size = new Size(707, 282);
         _connectionLayout.TabIndex = 0;
         // 
         // _serverLabel
@@ -339,7 +339,7 @@ partial class ConnectionDialog
         _statusLabel.Location = new Point(4, 254);
         _statusLabel.Margin = new Padding(4, 0, 4, 0);
         _statusLabel.Name = "_statusLabel";
-        _statusLabel.Size = new Size(699, 1);
+        _statusLabel.Size = new Size(699, 28);
         _statusLabel.TabIndex = 11;
         _statusLabel.Text = "Stan połączenia";
         // 
@@ -348,7 +348,7 @@ partial class ConnectionDialog
         _infoLabel.AutoSize = true;
         _infoLabel.Dock = DockStyle.Fill;
         _infoLabel.ForeColor = SystemColors.GrayText;
-        _infoLabel.Location = new Point(19, 331);
+        _infoLabel.Location = new Point(19, 436);
         _infoLabel.Margin = new Padding(4, 12, 4, 0);
         _infoLabel.Name = "_infoLabel";
         _infoLabel.Size = new Size(737, 50);
@@ -362,7 +362,7 @@ partial class ConnectionDialog
         _buttonsPanel.Controls.Add(_okButton);
         _buttonsPanel.Dock = DockStyle.Right;
         _buttonsPanel.FlowDirection = FlowDirection.RightToLeft;
-        _buttonsPanel.Location = new Point(512, 396);
+        _buttonsPanel.Location = new Point(512, 501);
         _buttonsPanel.Margin = new Padding(4, 15, 4, 4);
         _buttonsPanel.Name = "_buttonsPanel";
         _buttonsPanel.Size = new Size(244, 35);
@@ -396,7 +396,7 @@ partial class ConnectionDialog
         AutoScaleDimensions = new SizeF(10F, 25F);
         AutoScaleMode = AutoScaleMode.Font;
         CancelButton = _cancelButton;
-        ClientSize = new Size(775, 450);
+        ClientSize = new Size(775, 555);
         Controls.Add(_rootLayout);
         FormBorderStyle = FormBorderStyle.FixedDialog;
         Margin = new Padding(4);
