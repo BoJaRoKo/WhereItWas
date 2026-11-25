@@ -16,7 +16,9 @@ public partial class Form1 : Form
     {
         get
         {
-            return _queries[comboBox1.SelectedIndex].Sql;
+            return comboBox1.SelectedItem is QueryInfo info
+                ? _queries.FirstOrDefault(query => query.Id == info.Id)?.Sql
+                : null;
         }
     }
 
@@ -27,6 +29,8 @@ public partial class Form1 : Form
         InitializeComponent();
         Zaloguj();
         textBox3.Text = _sessionManager.CurrentProfile?.Database ?? "Brak bazy danych";
+        comboBox1.DisplayMember = nameof(QueryInfo.Name);
+        comboBox1.DataSource = Execute.QueryNames().ToList();
         comboBox1.SelectedIndex = 0;
         dataGridView1.DataBindingComplete += DataGridView1_DataBindingComplete;
         dataGridView1.Sorted += DataGridView1_Sorted;

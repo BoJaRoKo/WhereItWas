@@ -216,7 +216,7 @@ partial class Form1
         comboBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         tableLayoutPanel1.SetColumnSpan(comboBox1, 2);
         comboBox1.FormattingEnabled = true;
-        comboBox1.Items.AddRange(new object[] { "Tylko liczba znalezionych rekordów", "Tylko ścieżka", "Pola danych bez ścieżki", "Pola danych i ścieżka" });
+        comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
         comboBox1.Location = new Point(3, 43);
         comboBox1.Name = "comboBox1";
         comboBox1.Size = new Size(340, 33);
