@@ -42,6 +42,7 @@ partial class Form1
         button3 = new Button();
         labelExecutionTimer = new Label();
         comboBox1 = new ComboBox();
+        textBox3 = new TextBox();
         queryTimer = new System.Windows.Forms.Timer(components);
         tableLayoutPanel1.SuspendLayout();
         tabControl1.SuspendLayout();
@@ -73,6 +74,7 @@ partial class Form1
         tableLayoutPanel1.Controls.Add(button3, 11, 1);
         tableLayoutPanel1.Controls.Add(labelExecutionTimer, 11, 2);
         tableLayoutPanel1.Controls.Add(comboBox1, 0, 1);
+        tableLayoutPanel1.Controls.Add(textBox3, 2, 1);
         tableLayoutPanel1.Dock = DockStyle.Fill;
         tableLayoutPanel1.Location = new Point(0, 0);
         tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -220,6 +222,15 @@ partial class Form1
         comboBox1.Size = new Size(340, 33);
         comboBox1.TabIndex = 7;
         // 
+        // textBox3
+        // 
+        textBox3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        tableLayoutPanel1.SetColumnSpan(textBox3, 2);
+        textBox3.Location = new Point(349, 43);
+        textBox3.Name = "textBox3";
+        textBox3.Size = new Size(340, 31);
+        textBox3.TabIndex = 9;
+        // 
         // queryTimer
         // 
         queryTimer.Interval = 250;
@@ -261,4 +272,5 @@ partial class Form1
     private Label labelExecutionTimer;
     private System.Windows.Forms.Timer queryTimer;
     private ComboBox comboBox1;
+    private TextBox textBox3;
 }

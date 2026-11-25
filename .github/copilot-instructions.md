@@ -15,3 +15,4 @@
 - W WhereItWas klasa `Execute` ma należeć do `WhereItWas.Core`, nie do `WhereItWas.Cli`. Jeśli przeniesienie wymaga współdzielonego typu parametrów, należy umieścić go tak, by uniknąć zależności kołowych.
 - W WhereItWas testy jednostkowe mają być robione przede wszystkim dla `WhereItWas.Core`; testy CLI powinny być traktowane bardziej jako integracyjne wywołania programu niż podstawowy cel testów jednostkowych. Nie wykonywać testów, do odwołania.
 - W WhereItWas baza FsAnalyzer nie ma być wymuszana w aplikacji; to tylko obecnie jedyna dostępna kompletna baza.
+- Użytkownik preferuje minimalne zmiany i chce, aby przy przenoszeniu typów wykonywać tylko niezbędne modyfikacje bez dodatkowego refaktoru.

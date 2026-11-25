@@ -10,38 +10,30 @@ public partial class Form1 : Form
     private readonly Stopwatch _queryStopwatch = new();
     private bool _loginAttempted;
     private bool _isQueryRunning;
+    private IReadOnlyList<QueryDefinition> _queries = Array.Empty<QueryDefinition>();
+
     private string? ActualQuery
     {
         get
         {
-            return comboBox1.SelectedIndex switch
-            {
-                0 => _sqlSelectCount,
-                1 => _sqlSelectPathOnly,
-                2 => _sqlSelect,
-                3 => _sqlSelectWithPath,
-                _ => null
-            };
+            return _queries[comboBox1.SelectedIndex].Sql;
         }
     }
-    private string? _sqlSelect = null;
-    private string? _sqlSelectCount = null;
-    private string? _sqlSelectPathOnly = null;
-    private string? _sqlSelectWithPath = null;
 
     public Form1(SqlSessionManager sessionManager)
     {
         _sessionManager = sessionManager;
+        
         InitializeComponent();
+        Zaloguj();
+        textBox3.Text = _sessionManager.CurrentProfile?.Database ?? "Brak bazy danych";
         comboBox1.SelectedIndex = 0;
         dataGridView1.DataBindingComplete += DataGridView1_DataBindingComplete;
         dataGridView1.Sorted += DataGridView1_Sorted;
     }
 
-    protected override void OnShown(EventArgs e)
+    private void Zaloguj()
     {
-        base.OnShown(e);
-
         if (_loginAttempted)
         {
             return;
@@ -64,19 +56,10 @@ public partial class Form1 : Form
 
     private void Button1_Click(object sender, EventArgs e)
     {
-        var par = new Stack<string>();
-        par.Push(this.textBox1.Text);
-        var x = new QueryParameters(par.ToArray());
+        var x = this.textBox1.Text;
         try
         {
-            _sqlSelect = null;
-            _sqlSelectCount = null;
-            _sqlSelectPathOnly = null;
-            _sqlSelectWithPath = null;
-            _sqlSelect = Execute.SqlSelect(x);
-            _sqlSelectCount = Execute.SqlSelectCount(x);
-            _sqlSelectPathOnly = Execute.SqlSelectPathOnly(x);
-            _sqlSelectWithPath = Execute.SqlSelectWithPath(x);
+            _queries = Execute.GetQueries(x);
             this.textBox2.Text = ActualQuery;
         }
         catch (ArgumentException ex)
