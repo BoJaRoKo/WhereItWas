@@ -75,11 +75,14 @@ public partial class Form1 : Form
             if (!File.Exists(path))
                 throw new FileNotFoundException("Nie znaleziono podręcznika użytkownika.", path);
 
-            var startInfo = new ProcessStartInfo("notepad.exe") { UseShellExecute = false };
-            startInfo.ArgumentList.Add(path);
-            using var process = Process.Start(startInfo);
+            using var helpForm = new HelpForm(File.ReadAllText(path));
+            helpForm.ShowDialog(this);
         }
-        catch (Exception ex)
+        catch (IOException ex)
+        {
+            MessageBox.Show(this, ex.Message, "WhereItWas — pomoc", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        catch (UnauthorizedAccessException ex)
         {
             MessageBox.Show(this, ex.Message, "WhereItWas — pomoc", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

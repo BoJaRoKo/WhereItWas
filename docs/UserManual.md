@@ -38,7 +38,7 @@ Po zmianie wzorca naciśnij ponownie Generate. Po zmianie wariantu również war
 
 Przykład: `raport<0-9>?.pdf` — nazwa raport, cyfra, jeden dowolny znak i rozszerzenie pdf.
 
-Porównania wykonuje SQL Server przy użyciu `=` lub `LIKE`. Rozróżnianie wielkości liter, akcentów i zakresy znaków zależą od kolacji odpowiednich kolumn.
+Porównania wykonuje SQL Server przy użyciu = lub LIKE. Rozróżnianie wielkości liter, znaków diakrytycznych oraz interpretacja zakresów znaków zależą od ustawień sortowania (COLLATION) odpowiednich kolumn.
 
 ### 4.2. Nazwa i rozszerzenie
 
@@ -116,7 +116,7 @@ Dodatkowe warunki: maksymalnie jeden niecytowany `|` poza klasą i jeden znaczni
 
 ## 6. Pomoc i ograniczenia
 
-- F1 w głównym oknie otwiera ten podręcznik w Notatniku.
+- F1 w głównym oknie otwiera ten podręcznik w oknie pomocy z formatowaniem.
 - Najechanie kursorem na kontrolkę pokazuje podpowiedź; opis wariantu pochodzi z katalogu zapytań Core.
 - GUI nie udostępnia obecnie limitu wyników ani konfigurowania ORDER BY. Przy bardzo szerokich wzorcach zacznij od wariantu Liczba.
 - Domyślny timeout polecenia SQL wynosi 120 sekund. Rekurencyjne odtwarzanie ścieżek podlega domyślnemu limitowi rekurencji SQL Server.
