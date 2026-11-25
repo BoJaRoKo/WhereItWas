@@ -9,23 +9,32 @@ public sealed class ExecuteTests
     [InlineData("", false)]
     [InlineData(" ", true)]
     [InlineData("   ", true)]
-    [InlineData("\t", false)]
-    [InlineData("\r\n", false)]
+    [InlineData("\t", true)]
+    [InlineData("\r\n", true)]
     [InlineData("a", true)]
     [InlineData("0", true)]
     [InlineData("false", true)]
-    [InlineData(" abc ", false)]
+    [InlineData(" abc ", true)]
     [InlineData("abc ", true)]
-    [InlineData("SELECT 1", false)]
+    [InlineData("SELECT 1", true)]
     [InlineData("\twartość\t", true)]
     [InlineData("ala/ma/kota", true)]
     [InlineData("/ala/ma/kota", true)]
     [InlineData("/ala/:ma/kota", true)]
     [InlineData("/:ala/:ma/kota", false)]
-    public void SimpleVeryfication_ReturnsExpectedResult(string? query, bool expected)
+    public void GetQueries_ValidatesQuery(string? query, bool expected)
     {
-        var actual = Execute.SimpleVeryfication(query!);
-
-        Assert.Equal(expected, actual);
+        if (expected)
+        {
+            var queries = Execute.GetQueries(query!);
+            Assert.Equal(Execute.QueryNames().Select(info => info.Id),
+                queries.Select(definition => definition.Id));
+            Assert.All(queries, definition =>
+                Assert.False(string.IsNullOrWhiteSpace(definition.Sql)));
+        }
+        else
+        {
+            Assert.ThrowsAny<ArgumentException>(() => Execute.GetQueries(query!));
+        }
     }
 }
