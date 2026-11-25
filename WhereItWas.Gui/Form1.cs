@@ -32,8 +32,57 @@ public partial class Form1 : Form
         comboBox1.DisplayMember = nameof(QueryInfo.Name);
         comboBox1.DataSource = Execute.QueryNames().ToList();
         comboBox1.SelectedIndex = 0;
+        comboBox1.SelectedIndexChanged += (_, _) => UpdateQueryHelp();
+        ConfigureHelp();
         dataGridView1.DataBindingComplete += DataGridView1_DataBindingComplete;
         dataGridView1.Sorted += DataGridView1_Sorted;
+    }
+
+    private void ConfigureHelp()
+    {
+        helpToolTip.SetToolTip(textBox1, "Wzorzec wyszukiwania. F1 — składnia i przykłady.");
+        helpToolTip.SetToolTip(button1, "Generuje SQL dla wpisanego wzorca.");
+        helpToolTip.SetToolTip(button3, "Wykonuje wygenerowane zapytanie w wybranym wariancie.");
+        helpToolTip.SetToolTip(button2, "Zamyka program.");
+        helpToolTip.SetToolTip(textBox3, "Nazwa bazy danych aktywnego połączenia.");
+        helpToolTip.SetToolTip(textBox2, "Podgląd SQL. Zmiana tekstu nie zmienia wykonywanego zapytania.");
+        helpToolTip.SetToolTip(dataGridView1, "Wyniki ostatniego wykonanego zapytania.");
+        helpToolTip.SetToolTip(labelExecutionTimer, "Czas wykonywania zapytania.");
+        UpdateQueryHelp();
+    }
+
+    private void UpdateQueryHelp()
+    {
+        helpToolTip.SetToolTip(comboBox1, (comboBox1.SelectedItem as QueryInfo)?.Description ?? string.Empty);
+    }
+
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == Keys.F1)
+        {
+            ShowUserManual();
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    private void ShowUserManual()
+    {
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "UserManual.md");
+            if (!File.Exists(path))
+                throw new FileNotFoundException("Nie znaleziono podręcznika użytkownika.", path);
+
+            var startInfo = new ProcessStartInfo("notepad.exe") { UseShellExecute = false };
+            startInfo.ArgumentList.Add(path);
+            using var process = Process.Start(startInfo);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "WhereItWas — pomoc", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void Zaloguj()

@@ -29,6 +29,7 @@ partial class Form1
     private void InitializeComponent()
     {
         components = new System.ComponentModel.Container();
+        helpToolTip = new ToolTip(components);
         tableLayoutPanel1 = new TableLayoutPanel();
         button1 = new Button();
         textBox1 = new TextBox();
@@ -271,6 +272,7 @@ partial class Form1
     private Button button3;
     private Label labelExecutionTimer;
     private System.Windows.Forms.Timer queryTimer;
+    private ToolTip helpToolTip;
     private ComboBox comboBox1;
     private TextBox textBox3;
 }

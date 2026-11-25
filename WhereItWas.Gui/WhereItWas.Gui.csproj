@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WhereItWas.Core\WhereItWas.Core.csproj" />
+    <None Include="..\docs\UserManual.md" Link="UserManual.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup>
