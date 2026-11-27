@@ -8,6 +8,7 @@ public partial class Form1 : Form
     private const string RowNumberColumnName = "RowNumber";
     private readonly SqlSessionManager _sessionManager;
     private readonly Stopwatch _queryStopwatch = new();
+    private CancellationTokenSource? _queryCancellation;
     private bool _loginAttempted;
     private bool _isQueryRunning;
     private IReadOnlyList<QueryDefinition> _queries = Array.Empty<QueryDefinition>();
@@ -25,7 +26,7 @@ public partial class Form1 : Form
     public Form1(SqlSessionManager sessionManager)
     {
         _sessionManager = sessionManager;
-        
+
         InitializeComponent();
         Zaloguj();
         textBox3.Text = _sessionManager.CurrentProfile?.Database ?? "Brak bazy danych";
@@ -35,7 +36,7 @@ public partial class Form1 : Form
         comboBox1.SelectedIndexChanged += (_, _) => UpdateQueryHelp();
         ConfigureHelp();
         dataGridView1.DataBindingComplete += DataGridView1_DataBindingComplete;
-        dataGridView1.Sorted += DataGridView1_Sorted;
+        dataGridView1.CellFormatting += DataGridView1_CellFormatting;
     }
 
     private void ConfigureHelp()
@@ -43,6 +44,7 @@ public partial class Form1 : Form
         helpToolTip.SetToolTip(textBox1, "Wzorzec wyszukiwania. F1 — składnia i przykłady.");
         helpToolTip.SetToolTip(button1, "Generuje SQL dla wpisanego wzorca.");
         helpToolTip.SetToolTip(button3, "Wykonuje wygenerowane zapytanie w wybranym wariancie.");
+        helpToolTip.SetToolTip(button5, "Przerywa wykonywanie zapytania.");
         helpToolTip.SetToolTip(button2, "Zamyka program.");
         helpToolTip.SetToolTip(textBox3, "Nazwa bazy danych aktywnego połączenia.");
         helpToolTip.SetToolTip(textBox2, "Podgląd SQL. Zmiana tekstu nie zmienia wykonywanego zapytania.");
@@ -155,13 +157,17 @@ public partial class Form1 : Form
             bindingSource1.DataSource = null;
             dataGridView1.Columns.Clear();
             SetQueryExecutionState(true);
-            var a = ActualQuery;
-            var table = await Task.Run(() => _sessionManager.ExecuteQuery(a));
+            var query = ActualQuery;
+            using var cancellationSource = new CancellationTokenSource();
+            _queryCancellation = cancellationSource;
+            var table = await _sessionManager.ExecuteQueryAsync(query, cancellationSource.Token);
             dataGridView1.AutoGenerateColumns = true;
             bindingSource1.DataSource = table;
-            EnsureRowNumberColumn();
-            UpdateRowNumbers();
             tabControl1.SelectedTab = tabPage2;
+        }
+        catch (OperationCanceledException) when (_queryCancellation?.IsCancellationRequested == true)
+        {
+            MessageBox.Show(this, "Zapytanie zostało przerwane.", "WhereItWas", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
@@ -174,19 +180,36 @@ public partial class Form1 : Form
         }
         finally
         {
+            _queryCancellation = null;
             SetQueryExecutionState(false);
         }
+    }
+
+    private void Button5_Click(object sender, EventArgs e)
+    {
+        if (!_isQueryRunning || _queryCancellation is null)
+        {
+            return;
+        }
+
+        button5.Enabled = false;
+        _queryCancellation.Cancel();
     }
 
     private void DataGridView1_DataBindingComplete(object? sender, DataGridViewBindingCompleteEventArgs e)
     {
         EnsureRowNumberColumn();
-        UpdateRowNumbers();
     }
 
-    private void DataGridView1_Sorted(object? sender, EventArgs e)
+    private void DataGridView1_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
     {
-        UpdateRowNumbers();
+        if (e.RowIndex >= 0 &&
+            dataGridView1.Columns.Contains(RowNumberColumnName) &&
+            e.ColumnIndex == dataGridView1.Columns[RowNumberColumnName].Index)
+        {
+            e.Value = (e.RowIndex + 1).ToString();
+            e.FormattingApplied = true;
+        }
     }
 
     private void EnsureRowNumberColumn()
@@ -205,26 +228,11 @@ public partial class Form1 : Form
             ReadOnly = true,
             Frozen = true,
             SortMode = DataGridViewColumnSortMode.NotSortable,
-            AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+            Width = 55
         };
 
         dataGridView1.Columns.Insert(0, rowNumberColumn);
-    }
-
-    private void UpdateRowNumbers()
-    {
-        if (!dataGridView1.Columns.Contains(RowNumberColumnName))
-        {
-            return;
-        }
-
-        foreach (DataGridViewRow row in dataGridView1.Rows)
-        {
-            if (!row.IsNewRow)
-            {
-                row.Cells[RowNumberColumnName].Value = row.Index + 1;
-            }
-        }
     }
 
     private void QueryTimer_Tick(object? sender, EventArgs e)
@@ -238,6 +246,7 @@ public partial class Form1 : Form
         button1.Enabled = !isRunning;
         button2.Enabled = !isRunning;
         button3.Enabled = !isRunning;
+        button5.Enabled = isRunning;
         textBox1.Enabled = !isRunning;
         comboBox1.Enabled = !isRunning;
         labelExecutionTimer.Visible = isRunning;
@@ -253,5 +262,10 @@ public partial class Form1 : Form
         queryTimer.Stop();
         _queryStopwatch.Reset();
         labelExecutionTimer.Text = "Czas: 00:00:00";
+    }
+
+    private void Button4_Click(object sender, EventArgs e)
+    {
+        ShowUserManual();        
     }
 }

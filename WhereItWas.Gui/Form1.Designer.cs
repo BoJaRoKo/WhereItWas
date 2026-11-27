@@ -31,6 +31,8 @@ partial class Form1
         components = new System.ComponentModel.Container();
         helpToolTip = new ToolTip(components);
         tableLayoutPanel1 = new TableLayoutPanel();
+        button5 = new Button();
+        button4 = new Button();
         button1 = new Button();
         textBox1 = new TextBox();
         tabControl1 = new TabControl();
@@ -68,6 +70,8 @@ partial class Form1
         tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 8.333332F));
         tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 8.333332F));
         tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 8.333332F));
+        tableLayoutPanel1.Controls.Add(button5, 10, 13);
+        tableLayoutPanel1.Controls.Add(button4, 0, 13);
         tableLayoutPanel1.Controls.Add(button1, 11, 0);
         tableLayoutPanel1.Controls.Add(textBox1, 0, 0);
         tableLayoutPanel1.Controls.Add(tabControl1, 0, 4);
@@ -96,6 +100,32 @@ partial class Form1
         tableLayoutPanel1.RowStyles.Add(new RowStyle());
         tableLayoutPanel1.Size = new Size(2082, 1061);
         tableLayoutPanel1.TabIndex = 2;
+        // 
+        // button5
+        // 
+        button5.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        button5.Enabled = false;
+        button5.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 238);
+        button5.Location = new Point(1733, 1018);
+        button5.Name = "button5";
+        button5.Size = new Size(167, 34);
+        button5.TabIndex = 12;
+        button5.Text = "Break";
+        button5.UseVisualStyleBackColor = true;
+        button5.Click += Button5_Click;
+        // 
+        // button4
+        // 
+        button4.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        button4.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 238);
+        button4.ForeColor = Color.Red;
+        button4.Location = new Point(3, 1018);
+        button4.Name = "button4";
+        button4.Size = new Size(167, 34);
+        button4.TabIndex = 11;
+        button4.Text = "Help (F1)";
+        button4.UseVisualStyleBackColor = true;
+        button4.Click += Button4_Click;
         // 
         // button1
         // 
@@ -181,6 +211,7 @@ partial class Form1
         // button2
         // 
         button2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        button2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 238);
         button2.Location = new Point(1906, 1018);
         button2.Name = "button2";
         button2.Size = new Size(173, 34);
@@ -227,6 +258,7 @@ partial class Form1
         // 
         textBox3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         tableLayoutPanel1.SetColumnSpan(textBox3, 2);
+        textBox3.Enabled = false;
         textBox3.Location = new Point(349, 43);
         textBox3.Name = "textBox3";
         textBox3.Size = new Size(340, 31);
@@ -245,7 +277,7 @@ partial class Form1
         Controls.Add(tableLayoutPanel1);
         HelpButton = true;
         Name = "Form1";
-        Text = "Gdzie to było ?";
+        Text = "Where it was?";
         Load += Form1_Load;
         tableLayoutPanel1.ResumeLayout(false);
         tableLayoutPanel1.PerformLayout();
@@ -275,4 +307,6 @@ partial class Form1
     private ToolTip helpToolTip;
     private ComboBox comboBox1;
     private TextBox textBox3;
+    private Button button4;
+    private Button button5;
 }
